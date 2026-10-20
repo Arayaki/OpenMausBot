@@ -11,7 +11,8 @@ import { chatImage, type ChatImagePart } from "./chat-images.ts";
 import { CALL_TOOL, directoryCallTarget, isDirectoryTool } from "../mcp-directory.ts";
 import { mcpStdioServer } from "../mcp-gate-config.ts";
 import { REMOTE_MCP_STARTUP_MS, remoteMcpSpec } from "../mcp-http.ts";
-import { compileToolSchema } from "../mcp-schema-validator.ts";
+import { compileToolSchema, schemaProblems } from "../mcp-schema-validator.ts";
+import { READ_OPEN_PAGE_ONLY } from "../browser-tool-shape.ts";
 import { allowsTool, canUseMcpServer, parseToolScope, type ToolScope } from "../../shared/tool-scope.ts";
 
 export interface ChatToolDefinition {
@@ -221,6 +222,13 @@ const BUILT_IN_BROWSER_BLANK_MEANS_OMITTED: Record<string, readonly string[]> = 
   agent_browser_read: ["url"],
 };
 
+/** Names what is wrong, so the model can fix the call instead of repeating it. */
+function argumentsMismatch(tool: Pick<RegisteredTool, "builtInBrowser" | "name" | "schema">, args: Record<string, unknown>): string {
+  if (tool.builtInBrowser && tool.name === "agent_browser_read" && args.url !== undefined) return READ_OPEN_PAGE_ONLY;
+  const problems = schemaProblems(tool.schema.errors);
+  return `Tool arguments do not match the advertised input schema: ${problems.join("; ") || "use its required fields and types"}.`;
+}
+
 function omitBlankDefaults(builtInBrowser: boolean, tool: string, args: unknown) {
   if (!builtInBrowser || !object(args)) return;
   for (const field of BUILT_IN_BROWSER_BLANK_MEANS_OMITTED[tool] ?? []) {
@@ -355,7 +363,8 @@ export async function mountChatTools(integrations: SendTurnInput["integrations"]
     // Security: should a bridged agents server answer here, use_tool is also judged by the tool it names.
     if (!directory && (excluded(tool.name) || (tool.agents && excluded(bridgedCallTarget(tool.name, args))))) throw new Error("Tool selection excludes this tool");
     omitBlankDefaults(tool.builtInBrowser, tool.name, args);
-    if (!object(args) || (!directory && !tool.schema(args))) throw new Error("Tool arguments do not match the advertised input schema; use its required fields and types");
+    if (!object(args)) throw new Error("Tool arguments must be a JSON object");
+    if (!directory && !tool.schema(args)) throw new Error(argumentsMismatch(tool, args));
     if (tool.searched && excluded(target(tool, args))) throw new Error("Tool selection excludes this tool");
   };
   const view = (name: string, args: Record<string, unknown>): ChatToolCallView => {

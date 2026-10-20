@@ -151,6 +151,7 @@ describe("Chat MCP session", () => {
     expect(session.definitions).toEqual([{ type: "function", function: { name: "audit_write", description: "Fixture write", parameters: schema } }]);
     expect(f.read().calls.map((call) => call.method)).not.toContain("tools/call");
     expect(() => session.validate("audit_write", { value: 42 })).toThrow("input schema");
+    expect(() => session.validate("audit_write", { value: 42 })).toThrow("value: must be string");
     await expect(session.execute("not_registered", {}, f.controller.signal)).rejects.toThrow("not advertised");
     expect(f.read().calls.map((call) => call.method)).not.toContain("tools/call");
     await expect(session.execute("audit_write", { value: "receipt" }, f.controller.signal)).resolves.toEqual({ text: "recorded:receipt", ok: true });
@@ -174,6 +175,17 @@ describe("Chat MCP session", () => {
     await session.execute(name, { url: "https://example.com" }, f.controller.signal);
     const calls = f.read().calls.filter((call) => call.method === "tools/call").map((call) => call.params?.arguments);
     expect(calls).toEqual([dropped ? {} : { url: " " }, { url: "https://example.com" }]);
+  });
+
+  it("tells a bot that passed url to the built-in browser's read to open the page first, and nothing reaches the browser", async () => {
+    const readSchema = { type: "object", properties: { selector: { type: "string" } }, additionalProperties: false };
+    const f = fixture(`if (message.method === "tools/list") { reply(message, {tools:[{name:"agent_browser_read",description:"Read the open page.",inputSchema:schema}]}); continue; }`, readSchema);
+    const session = await mountChatTools({ browser: f.server }, f.controller.signal, true);
+    sessions.push(session);
+    const name = session.definitions[0]!.function.name;
+    await expect(session.execute(name, { url: "https://example.com/pricing" }, f.controller.signal)).rejects.toThrow(/Open the address with agent_browser_open first/);
+    await expect(session.execute(name, { selector: 42 }, f.controller.signal)).rejects.toThrow("selector: must be string");
+    expect(f.read().calls.some((call) => call.method === "tools/call")).toBe(false);
   });
 
   it("starts servers with the widened PATH rather than the bare one the desktop shell inherits", async () => {
