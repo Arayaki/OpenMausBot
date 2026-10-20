@@ -243,7 +243,8 @@ function moveButton(view: MoveView, move: CloudMoveHandle, onStart?: () => void)
     onClick={() => { if (action.kind === "start") onStart?.(); move.run(action.kind); }}>{action.label}</button>;
 }
 
-export function CloudMoveSettings({ destination, onClose }: { destination: string; onClose?: () => void }) {
+/** `bring`: offer Bring newer chats; My Cloud gets its chats by itself (cloud-send.mjs), so not there. */
+export function CloudMoveSettings({ destination, onClose, bring: offerBring = true }: { destination: string; onClose?: () => void; bring?: boolean }) {
   const bridge = window.ogb?.remoteClient?.active ? undefined : window.ogb?.cloudMove;
   const move = useCloudMove(bridge, destination);
   if (!bridge) return null;
@@ -253,10 +254,9 @@ export function CloudMoveSettings({ destination, onClose }: { destination: strin
   const idle = !view.running && state.phase !== "done";
   const date = previous ? savedAt(previous.createdAt) : "";
   const ready = idle && !overview?.blocked;
-  const bring = ready && cloud && !cloud.empty && view.action?.kind !== "bring";
+  const bring = offerBring && ready && cloud && !cloud.empty && view.action?.kind !== "bring";
   return <Card title={t("cloudMove.title")} subtitle={t("cloudMove.intro", { server: view.server })}>
     <div data-cloud-move={state.phase} className="flex flex-col items-start gap-3">
-      {destination === "cloud" && <PlacesLine server={view.server} />}
       <p className="text-[13px] text-ink">{local
         ? t("cloudMove.size", { size: formatMoveBytes(local.bytes), bots: local.bots, chats: local.chats, rooms: local.rooms })
         : t("cloudMove.measuring")}</p>
@@ -276,16 +276,6 @@ export function CloudMoveSettings({ destination, onClose }: { destination: strin
       {ready && previous && <p className="text-[12px] text-ink-secondary">{t("cloudMove.previous", { server: view.server, date, bots: previous.bots, chats: previous.chats, size: formatMoveBytes(previous.bytes ?? 0) })}</p>}
     </div>
   </Card>;
-}
-
-/** Bots, chats and skills live on each side by design; this card is where this computer's go over, so it says so. */
-function PlacesLine({ server }: { server: string }) {
-  const { state } = useStore();
-  const names = state.bots.map((bot) => bot.name).filter(Boolean);
-  const shown = names.length > 3 ? [...names.slice(0, 2), t("cloudMove.placesMore", { count: String(names.length - 2) })] : names;
-  return <p className="text-[12px] text-ink-secondary" data-cloud-places>{names.length
-    ? t("cloudMove.places", { server, bots: new Intl.ListFormat(activeLocale(), { type: "conjunction" }).format(shown) })
-    : t("cloudMove.placesNone", { server })}</p>;
 }
 
 export function cloudMoveOffer(move: CloudMoveHandle, on: { start?: () => void; notNow?: () => void } = {}) {

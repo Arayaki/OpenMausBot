@@ -120,11 +120,15 @@ const __APP_VERSION__: string;
        * "cloud"); a server's own page is answered about itself only, and its
        * Copy opens this computer's Settings on that copy (the verified Cloud's starts it). */
       cloudMove?: import("../../electron/cloud-move.mjs").CloudMoveBridge;
-      /** The Cloud's setup checklist: shows the lending switch in this app's
-       * own Settings → OMB Cloud (leaving the Cloud's page). */
-      cloudLending?: { open(): Promise<void> };
+      /** "Let My Cloud use this computer", on My Cloud's own page in this app: its one switch and what is lent
+       * (electron/cloud-lending-ipc.mjs). `open` shows this computer's own Settings, leaving the page. */
+      cloudLending?: { open(): Promise<void>; state?(): Promise<import("../../electron/cloud-lending-ipc.mjs").PageLending>; set?(on: boolean): Promise<import("../../electron/cloud-lending-ipc.mjs").PageLending> };
       /** This computer's Settings → Logins only: what of Logins My Cloud has, and Also use on My Cloud. */
       cloudLogins?: import("../../electron/cloud-logins.mjs").CloudLoginsBridge;
+      /** This computer's Settings → MausBot Cloud: what each side has, Send everything, and the switches. */
+      cloudSend?: import("../../electron/cloud-send.mjs").CloudSendBridge;
+      /** My Cloud's own page in this app: what this computer has that My Cloud lacks, and Bring them over. */
+      cloudSendPage?: import("../../electron/cloud-send.mjs").CloudSendPageBridge;
       /** Settings on the person's own Cloud: the plan, read only. */
       cloudPlan?: import("../../electron/cloud-account.mjs").CloudPlanBridge;
       desktopNotices?: import("../../electron/desktop-prefs.mjs").DesktopNoticesBridge;
