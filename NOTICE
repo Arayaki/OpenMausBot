@@ -22,6 +22,10 @@ server/drivers/claude-keepwarm.ts) ports the design of Cache Tax,
 https://github.com/karanb192/claude-code-mods, Copyright (c) 2026 Karan
 Bansal, used under the MIT License (third_party/cache-tax/LICENSE).
 
+Keyless web search (server/web-search.ts) ports the DuckDuckGo provider of
+oh-my-pi, Copyright (c) 2025 Mario Zechner and Copyright (c) 2025-2026 Can
+Bölük, used under the MIT License (third_party/oh-my-pi/LICENSE).
+
 The secure phone credential transport uses @hpke/core and @hpke/common from
 hpke-js, Copyright 2023-2024 Ajitomi Daisuke, used under the MIT License.
 

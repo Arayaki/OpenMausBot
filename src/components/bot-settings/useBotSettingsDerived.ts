@@ -33,6 +33,7 @@ export type BotPatch = Partial<
     | "replyStyle"
     | "memoryEnabled"
     | "xResearch"
+    | "webSearch"
     | "voice"
     | "chiefOfStaff"
     | "managedSections"

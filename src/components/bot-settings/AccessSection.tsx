@@ -527,6 +527,19 @@ function ResearchCard({ bot, patch }: { bot: Bot; patch: (patch: { xResearch: bo
   );
 }
 
+function WebSearchCard({ bot, patch }: { bot: Bot; patch: (patch: { webSearch: boolean }) => void }) {
+  const on = bot.webSearch === true;
+  return (
+    <div className="flex items-center justify-between gap-4 rounded-xl bg-card p-4" data-testid="access-web-search">
+      <div>
+        <div className="text-[15px] font-medium text-ink">{t("webSearch.title")}</div>
+        <div className="mt-0.5 text-[13px] text-ink-secondary">{t(on ? "webSearch.on" : "webSearch.off")}</div>
+      </div>
+      <Switch checked={on} aria-label={t("webSearch.switch")} onClick={() => patch({ webSearch: !on })} />
+    </div>
+  );
+}
+
 function RecordStepsRow({ on, browserOn, myChrome, onChange }: { on: boolean; browserOn: boolean; myChrome: boolean; onChange: (on: boolean) => void }) {
   return (
     <div className="mt-3 flex items-center justify-between gap-4 border-t border-hairline/40 pt-3">
@@ -586,7 +599,7 @@ export function CloudPreference({ bot, patch }: { bot: Bot; patch: ReturnType<ty
   );
 }
 
-export type AccessPart = "worksOn" | "folder" | "apps" | "xResearch" | "mcp" | "tools" | "browser" | "webhooks" | "always";
+export type AccessPart = "worksOn" | "folder" | "apps" | "xResearch" | "webSearch" | "mcp" | "tools" | "browser" | "webhooks" | "always";
 
 export function AccessSection({
   bot,
@@ -752,6 +765,7 @@ export function AccessSection({
       </div>}
 
       {!draft && shows("xResearch") && <ResearchCard bot={bot} patch={patch} />}
+      {!draft && shows("webSearch") && <WebSearchCard bot={bot} patch={patch} />}
 
       {!draft && shows("webhooks") && <div className="rounded-xl bg-card p-4">
         <div className="text-[15px] font-medium text-ink">{t("botAccess.webhooks.title")}</div>

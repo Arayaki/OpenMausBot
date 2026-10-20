@@ -4,6 +4,7 @@ import { OPTIONS_CARD_LIMITS, WATCHER_OPTIONS_CARD_BOT_ID } from "../../shared/o
 import { agentToolAnnotations } from "../agent-tool-policy.ts";
 import { WIDGET_TOOL_DEFINITIONS } from "./agents-widget-tools.ts";
 import { RESEARCH_TOOL_DEFINITIONS, RESEARCH_TOOL_NAMES } from "./agents-research-tools.ts";
+import { WEB_SEARCH_TOOL_DEFINITION, WEB_SEARCH_TOOL_NAME } from "./agents-web-search-tool.ts";
 
 /** Which tools a turn is shown. Presentation only: the server still authenticates and scopes every call. */
 export interface CatalogProfile {
@@ -12,6 +13,8 @@ export interface CatalogProfile {
   voiceNotes: boolean;
   /** A treg key or a Cloud plan's research credential is held and this bot's research switch is on. Absent means off. */
   xResearch?: boolean;
+  /** This bot's web search switch is on. Absent means off. */
+  webSearch?: boolean;
   cloudHome: boolean;
   memoryEnabled?: boolean;
   /** The section's Chief of Staff; the server refuses Chief-only tools to every other bot. */
@@ -29,6 +32,7 @@ export function catalogProfileFromEnv(env: NodeJS.ProcessEnv): CatalogProfile {
     sharedComputers: env.OMB_SHARED_COMPUTERS_ENABLED === "1",
     voiceNotes: env.OMB_VOICE_NOTES === "1",
     xResearch: env.OMB_X_RESEARCH === "1",
+    webSearch: env.OMB_WEB_SEARCH === "1",
     cloudHome: env.OMB_CLOUD_HOME === "1",
     memoryEnabled: env.OMB_MEMORY_ENABLED !== "0",
     chief: env.OMB_CHIEF_OF_STAFF === "1",
@@ -558,6 +562,7 @@ const TOOL_DEFINITIONS = [
     },
   },
   ...RESEARCH_TOOL_DEFINITIONS,
+  WEB_SEARCH_TOOL_DEFINITION,
   {
     name: "memory_update",
     description:
@@ -976,9 +981,12 @@ function catalogTools(profile: CatalogProfile) {
   const RESEARCH_READY_TOOLS = profile.xResearch === true
     ? VOICE_READY_TOOLS
     : VOICE_READY_TOOLS.filter((tool) => !RESEARCH_TOOL_NAMES.has(tool.name));
-  const ROLE_TOOLS = profile.chief
+  const SEARCH_READY_TOOLS = profile.webSearch === true
     ? RESEARCH_READY_TOOLS
-    : RESEARCH_READY_TOOLS.filter((tool) => !CHIEF_ONLY_TOOL_NAMES.has(tool.name)).map((tool) => {
+    : RESEARCH_READY_TOOLS.filter((tool) => tool.name !== WEB_SEARCH_TOOL_NAME);
+  const ROLE_TOOLS = profile.chief
+    ? SEARCH_READY_TOOLS
+    : SEARCH_READY_TOOLS.filter((tool) => !CHIEF_ONLY_TOOL_NAMES.has(tool.name)).map((tool) => {
       if (!CHIEF_TARGET_TOOL_NAMES.has(tool.name)) return tool;
       const properties = Object.fromEntries(Object.entries(tool.inputSchema.properties).filter(([key]) => key !== "for_bot_id"));
       return { ...tool, description: tool.description.replace(CHIEF_PROFILE_TARGET, ""), inputSchema: { ...tool.inputSchema, properties } };

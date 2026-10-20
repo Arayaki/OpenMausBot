@@ -294,3 +294,27 @@ describe("X research tools", () => {
     expect(result).toEqual({ text: "X research is off for this bot. Turn it on in this bot's settings under Access.", isError: true });
   });
 });
+
+describe("web_search", () => {
+  it("sends its arguments to the web search route and returns the route's JSON", async () => {
+    const calls: Array<{ path: string; body: unknown }> = [];
+    const result = await callTool("web_search", { query: "free tts api", recency: "year" }, context({
+      client: {
+        api: async () => ({}),
+        apiResponse: async (path, init) => {
+          calls.push({ path, body: JSON.parse(String(init?.body)) });
+          return { ok: true, status: 200, body: { provider: "duckduckgo", query: "free tts api", results: [] } };
+        },
+      },
+    }));
+    expect(calls).toEqual([{ path: "/api/internal/web/search", body: { query: "free tts api", recency: "year" } }]);
+    expect(JSON.parse(result.text)).toEqual({ provider: "duckduckgo", query: "free tts api", results: [] });
+  });
+
+  it("hands the bot the route's own sentence when it refuses", async () => {
+    const result = await callTool("web_search", { query: "q" }, context({
+      client: { api: async () => ({}), apiResponse: async () => ({ ok: false, status: 403, body: { error: "Web search is off for this bot." } }) },
+    }));
+    expect(result).toEqual({ text: "Web search is off for this bot.", isError: true });
+  });
+});

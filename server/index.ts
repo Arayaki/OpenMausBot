@@ -584,7 +584,7 @@ import {
 } from "./phone-secret.ts";
 // Keep these two last, so loading the route table leaves module start-up order as is.
 import { gzipTunnelReplies, json, onJsonBody, parsedBodyOf, readBody } from "./harness/http.ts";
-import { PASS, ROUTES, dispatchRoutes } from "./routes/table.ts"; import { createXResearchInternalRoutes } from "./routes/x-research.ts";
+import { PASS, ROUTES, dispatchRoutes } from "./routes/table.ts"; import { createXResearchInternalRoutes } from "./routes/x-research.ts"; import { createWebSearchInternalRoutes } from "./routes/web-search.ts";
 import { createHostedSlackRoutes } from "./routes/hosted-slack.ts";
 import { createBotPresetRoutes } from "./routes/bot-presets.ts";
 import { createBotMemoryRoutes } from "./routes/bot-memory.ts";
@@ -2061,6 +2061,7 @@ function agentsIntegration(
         return tts.voiceReady(cfg, speaking?.voice) && speaking?.voiceNotes !== false ? "1" : "0";
       })(),
       OMB_X_RESEARCH: researchCredential(cfg.treg?.key) && store.bot(botId)?.xResearch !== false ? "1" : "0",
+      OMB_WEB_SEARCH: store.bot(botId)?.webSearch === true ? "1" : "0",
       OMB_CHIEF_OF_STAFF: store.bot(botId)?.chiefOfStaff === true ? "1" : "0",
       OMB_ESCALATIONS: chiefEscalationsEnabled(cfg) ? "1" : "0",
     },
@@ -13674,6 +13675,7 @@ ROUTES.push(createBrowserViewerRoutes({
   restartRefusal: (session) => browserRestartRefusal(browserRuntime.interrupted(session), store.bots.filter((candidate) => candidate.busy
     && currentBrowserSession(candidate.id, candidate.browserProfile) === session).map((candidate) => ({ waitingOnBrowser: computerControl.snapshot(candidate.id).help?.place === "browser" }))),
 }));
+const webSearchRoutes = createWebSearchInternalRoutes({ botEnabled: (botId) => store.bot(botId)?.webSearch === true });
 const xResearchRoutes = createXResearchInternalRoutes({ credential: () => researchCredential(cfg.treg?.key), botEnabled: (botId) => store.bot(botId)?.xResearch !== false, cloudHome: CLOUD_HOME !== null });
 
 // Live calls: the client holds the WebRTC audio; the key never leaves the harness, which creates the session.
@@ -14274,6 +14276,7 @@ const handleRequest = async (req: IncomingMessage, res: ServerResponse) => {
         }
       };
       if (await xResearchRoutes({ method, path, res, json, botId: internalSender.id, readBody: readInternalBody }) !== PASS) return;
+      if (await webSearchRoutes({ method, path, res, json, botId: internalSender.id, readBody: readInternalBody }) !== PASS) return;
       const delegatedThisTurn = (taskId: string) => {
         (internalCapability.delegatedThisTurn ??= new Set()).add(taskId);
       };

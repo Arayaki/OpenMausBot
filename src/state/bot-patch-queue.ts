@@ -26,6 +26,7 @@ export type BotUpdatePatch = Partial<
     | "voice"
     | "voiceNotes"
     | "xResearch"
+    | "webSearch"
     | "pinned"
     | "hidden"
     | "section"

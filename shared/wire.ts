@@ -315,6 +315,9 @@ export interface WireBot {
    * x_post, x_profile), which spend the workspace's treg balance.
    * Absent/false = off: the person turns it on per bot. */
   xResearch?: boolean;
+  /** Whether this bot may use the keyless web_search tool, which sends its
+   * queries to DuckDuckGo. Absent/false = off: the person turns it on per bot. */
+  webSearch?: boolean;
   /** Whether this bot uses native memory. Absent/true = enabled. */
   memoryEnabled?: boolean;
   /** Queue direct-chat messages behind outstanding delegated work. */

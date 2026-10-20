@@ -246,6 +246,10 @@ export function createBotPatchRoutes(deps: BotPatchRouteDeps): RouteHandler {
         if (typeof body.xResearch !== "boolean") return json(res, 400, { error: "xResearch must be true or false" });
         patch.xResearch = body.xResearch;
       }
+      if (body.webSearch !== undefined) {
+        if (typeof body.webSearch !== "boolean") return json(res, 400, { error: "webSearch must be true or false" });
+        patch.webSearch = body.webSearch;
+      }
       if (body.memoryEnabled !== undefined) {
         if (typeof body.memoryEnabled !== "boolean") return json(res, 400, { error: "memoryEnabled must be true or false" });
         if (existingBot && (existingBot.busy || activeGroupTurnForBot(existingBot.id)) &&

@@ -61,6 +61,7 @@ function profiles(): Record<string, Record<string, string>> {
   }
   all["skills+shared+voice+escalations"] = { ...all["skills+shared+voice"]!, OMB_ESCALATIONS: "1" };
   all["skills+shared+voice+escalations+x"] = { ...all["skills+shared+voice+escalations"]!, OMB_X_RESEARCH: "1" };
+  all["skills+shared+voice+escalations+x+web"] = { ...all["skills+shared+voice+escalations+x"]!, OMB_WEB_SEARCH: "1" };
   all["default+legacy-switches"] = { ...all.default!, OMB_ROOM_TURN: "1", OMB_OWN_THREAD_CREATION: "1", OMB_EXTERNAL_RUNTIME: "1" };
   return all;
 }
@@ -69,7 +70,7 @@ const PROFILES = profiles();
 /** Refused by the server to every bot that is not a Chief of Staff. */
 const CHIEF_ONLY_TOOLS = ["create_bot", "list_team_setup", "propose_team_setup", "propose_bot_deletion", "create_room", "manage_room", "retry_thread"];
 /** The profile that mounts the most: its bridged list is checked in whole. */
-const FULL = "skills+shared+voice+escalations+x";
+const FULL = "skills+shared+voice+escalations+x+web";
 
 /** Bytes of each bridged list when its budget was last set. A list may not
  * exceed this by more than 2%, and may not undercut it by more than 2%
@@ -96,6 +97,7 @@ const BUDGET_BASELINE: Record<string, number> = {
   "skills+shared+voice+non-chief+cloud-home": 15607,
   "skills+shared+voice+escalations": 15738,
   "skills+shared+voice+escalations+x": 15832,
+  "skills+shared+voice+escalations+x+web": 15844,
   "default+legacy-switches": 14912,
 };
 

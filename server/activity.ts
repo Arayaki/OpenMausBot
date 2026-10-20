@@ -68,6 +68,7 @@ const RESEARCH_TOOL_LABELS: Record<string, { app: string; label: string }> = {
   x_profile: { app: "X", label: "Looked up an X profile" },
   research_search: { app: "Research", label: "Searched research tools" },
   research_endpoint: { app: "Research", label: "Read a research tool" },
+  web_search: { app: "Web", label: "Searched the web" },
 };
 
 /** treg's catalog ids name their platform and what they return (`apollo.people.search`): a research call reads as the

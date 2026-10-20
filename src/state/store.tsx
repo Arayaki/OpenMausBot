@@ -330,7 +330,7 @@ export interface Bot {
   speakReplies?: boolean;
   replyStyle?: import("../../shared/wire").WireBot["replyStyle"];
   voice?: string;
-  voiceNotes?: boolean; xResearch?: boolean;
+  voiceNotes?: boolean; xResearch?: boolean; webSearch?: boolean;
   memoryEnabled?: boolean;
   pinned?: boolean;
   hidden?: boolean;
